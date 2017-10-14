@@ -4,15 +4,70 @@ $dsn = 'mysql:dbname=brilliants;host=127.0.0.1';
 $user = 'root';
 $password = 'toor';
 
+
 try {
     $conn = new PDO($dsn, $user, $password);
 } catch (PDOException $e) {
     echo 'Подключение не удалось: ' . $e->getMessage();
 }
 
-$page = $p *100;
-$sql = "SELECT * FROM stones LIMIT $page, 100";
 
+$cut = 'Round';
+if($_POST['cut']){
+	$cut = $_POST['cut'];
+}
+
+
+
+
+$sym = "'Ideal', 'Excellent'";
+if($_POST['sym']){
+	$sym = "'".implode("','", explode(',', $_POST['sym']))."'";
+}
+
+$pol = "'Ideal', 'Excellent'";
+if($_POST['pol']){
+	$pol = "'".implode("','", explode(',', $_POST['pol']))."'";
+}
+
+$mk = "'Ideal', 'Excellent'";
+if($_POST['mk']){
+	$mk = "'".implode("','", explode(',', $_POST['mk']))."'";
+}
+
+$lw = $_POST['left-weight'] ? $_POST['left-weight'] : '0.08';
+$rw = $_POST['right-weight'] ? $_POST['right-weight'] : '13';
+
+$page = $_GET['page'] ? $_GET['page'] : 1;
+$p = ($page - 1) * 100;
+
+$sql = "
+	SELECT * FROM stones 
+	WHERE `cut` = '$cut' AND 
+		`sym` IN ($sym) AND
+		`pol` IN ($pol) AND
+		`mk` IN ($mk) AND 
+		(`ct` BETWEEN $lw AND $rw) AND
+		`cl` IN ('IF', 'FL')
+	ORDER BY `ct` ASC, `cl` ASC
+		LIMIT $p, 100
+		";
+
+// var_dump($sql);
+
+$sql_count = "
+	SELECT COUNT(`id`) AS `qty` FROM stones 
+	WHERE `cut` = '$cut' AND 
+	`sym` IN ($sym) AND
+	`pol` IN ($pol) AND
+	`mk` IN ($mk) AND 
+	(`ct` BETWEEN $lw AND $rw) AND
+	`cl` IN ('IF', 'FL')
+";
+
+foreach ($conn->query($sql_count) as $key => $value) {
+	$count = $value['qty'];
+}
 
 ?>
 
@@ -32,18 +87,18 @@ $sql = "SELECT * FROM stones LIMIT $page, 100";
 
 <nav>
 	<ul>
-		<li><a href="#">Ювелирный дом</a></li>
+		<li><a href="#" data-lang-ru="Ювелирный дом" data-lang-en="Jewelry house">Ювелирный дом</a></li>
 		<li class="disk">•</li>
-		<li><a href="#">Ваша примерка</a></li>
+		<li><a href="#" data-lang-ru="Ваша примерка" data-lang-en="Your fitting">Ваша примерка</a></li>
 		<li class="disk">•</li>
-		<li><a href="#">Базовая коллекция</a></li>
+		<li><a href="#" data-lang-ru="Базовая коллекция" data-lang-en="Base collection">Базовая коллекция</a></li>
 		<li class="disk">•</li>
-		<li><a href="#">Свадебная коллекция</a></li>
+		<li><a href="#" data-lang-ru="Свадебная коллекция" data-lang-en="Wedding collection">Свадебная коллекция</a></li>
 		<li class="disk">•</li>
-		<li><a href="#">Уникальное</a></li>
+		<li><a href="#" data-lang-ru="Уникальное" data-lang-en="Unique">Уникальное</a></li>
 		<li></li>
 		<li><span class="glyphicon glyphicon-shopping-cart"></span> </li>
-		<li>Контакты</li>
+		<li><span data-lang-ru="Контакты" data-lang-en="Contacts">Контакты</span></li>
 	</ul>
 </nav>
 
@@ -67,9 +122,9 @@ $sql = "SELECT * FROM stones LIMIT $page, 100";
 	<form method="POST" action="/">
 	<div class="row">
 		<div class="col-2">
-			<ul class="toggle">
-				<li class="current">Русский</li>
-				<li>English</li>
+			<ul class="toggle" id="lang">
+				<li class="current" data-lang="ru">Русский</li>
+				<li data-lang="en">English</li>
 			</ul>
 		</div>
 	</div>
@@ -78,89 +133,111 @@ $sql = "SELECT * FROM stones LIMIT $page, 100";
 		<div class="col-12 cuts">
 			<div class="cut current">
 				<div class="cut-img">
-					<img src="brilliants/heart.jpg">
+					<img src="brilliants/Round.png">
 				</div>
-				<span class="cut-name" data-cut="Round">Круглый</span>
+				<span class="cut-name" data-cut="Round" data-lang-ru="Круглый" data-lang-en="Round">Круглый</span>
 			</div>
 			<div class="cut">
 				<div class="cut-img">
-					<img src="brilliants/heart.jpg">
+					<img src="brilliants/Marquise.png">
 				</div>
-				<span class="cut-name" data-cut="Marquise">Маркиза</span>
+				<span class="cut-name" data-cut="Marquise" data-lang-ru="Маркиза" data-lang-en="Marquise">Маркиза</span>
 			</div>
 			<div class="cut">
 				<div class="cut-img">
-					<img src="brilliants/heart.jpg">
+					<img src="brilliants/Pear.png">
 				</div>
-				<span class="cut-name" data-cut="Pear">Груша</span>
+				<span class="cut-name" data-cut="Pear" data-lang-ru="Груша" data-lang-en="Pear">Груша</span>
 			</div>
 			<div class="cut">
 				<div class="cut-img">
-					<img src="brilliants/heart.jpg">
+					<img src="brilliants/Oval.png">
 				</div>
-				<span class="cut-name" data-cut="Oval">Овал</span>
+				<span class="cut-name" data-cut="Oval" data-lang-ru="Овал" data-lang-en="Oval">Овал</span>
 			</div>
 			<div class="cut">
 				<div class="cut-img">
-					<img src="brilliants/heart.jpg">
+					<img src="brilliants/Heart.png">
 				</div>
-				<span class="cut-name" data-cut="Heart">Сердце</span>
+				<span class="cut-name" data-cut="Heart" data-lang-ru="Сердце" data-lang-en="Heart">Сердце</span>
 			</div>
 			<div class="cut">
 				<div class="cut-img">
-					<img src="brilliants/heart.jpg">
+					<img src="brilliants/Emerald.png">
 				</div>
-				<span class="cut-name" data-cut="Emerald">Изумруд</span>
+				<span class="cut-name" data-cut="Emerald" data-lang-ru="Изумруд" data-lang-en="Emerald">Изумруд</span>
 			</div>
 			<div class="cut">
 				<div class="cut-img">
-					<img src="brilliants/heart.jpg">
+					<img src="brilliants/Princess.png">
 				</div>
-				<span class="cut-name" data-cut="Princess">Принцесса</span>
+				<span class="cut-name" data-cut="Princess" data-lang-ru="Принцесса" data-lang-en="Princess">Принцесса</span>
 			</div>
 			<div class="cut">
 				<div class="cut-img">
-					<img src="brilliants/heart.jpg">
+					<img src="brilliants/Radiant.png">
 				</div>
-				<span class="cut-name" data-cut="Radinat">Радиант</span>
+				<span class="cut-name" data-cut="Radiant" data-lang-ru="Радиант" data-lang-en="Radiant">Радиант</span>
 			</div>
 			<div class="cut">
 				<div class="cut-img">
-					<img src="brilliants/heart.jpg">
+					<img src="brilliants/Baguette.png">
 				</div>
-				<span class="cut-name" data-cut="Baguette">Багет</span>
+				<span class="cut-name" data-cut="Baguette" data-lang-ru="Багет" data-lang-en="Baguette">Багет</span>
 			</div>
 			<div class="cut">
 				<div class="cut-img">
-					<img src="brilliants/heart.jpg">
+					<img src="brilliants/Asscher.png" >
 				</div>
-				<span class="cut-name" data-cut="Asher">Ашер</span>
+				<span class="cut-name" data-cut="Asscher" data-lang-ru="Ашер" data-lang-en="Asscher">Ашер</span>
 			</div>
 			<div class="cut">
 				<div class="cut-img">
-					<img src="brilliants/heart.jpg">
+					<img src="brilliants/Cushion.png">
 				</div>
-				<span class="cut-name" data-cut="Cushion">Кушон</span>
+				<span class="cut-name" data-cut="Cushion" data-lang-ru="Кушон" data-lang-en="Cushion">Кушон</span>
 			</div>
 		</div>
 	</div>
-	<input type="hidden" name="cut" val="">
+	<input type="hidden" name="cut" value="<?= $cut ?>">
 
 	<hr>
 
 	<div class="row">
-		<div class="col-4">
-			<span class="measure">Цвет</span>
+		<div class="col-12">
+			<span class="measure" data-lang-ru="Цвет" data-lang-en="Color">Цвет</span>
 			<ul class="selector">
-			    <li>1</li>
-			    <li>2</li>
-			    <li>3</li>
-			    <li>4</li>
-			    <li>5</li>
+			    <li data-lang-ru="4" data-lang-en="D">4</li>
+			    <li data-lang-ru="5" data-lang-en="E">5</li>
+			    <li data-lang-ru="6" data-lang-en="F">6</li>
+			    <li data-lang-ru="6" data-lang-en="G">6</li>
+			    <li data-lang-ru="8" data-lang-en="H">8</li>
+			    <li data-lang-ru="9" data-lang-en="I">9</li>
+			    <li data-lang-ru="10" data-lang-en="J">10</li>
+			    <li data-lang-ru="11" data-lang-en="K">11</li>
+			    <li data-lang-ru="12" data-lang-en="L">12</li>
+			    <li data-lang-ru="13" data-lang-en="M">13</li>
+			    <li data-lang-ru="14" data-lang-en="N">14</li>
+			    <li data-lang-ru="15" data-lang-en="O">15</li>
+			    <li data-lang-ru="16" data-lang-en="P">16</li>
+			    <li data-lang-ru="17" data-lang-en="Q">17</li>
+			    <li data-lang-ru="18" data-lang-en="R">18</li>
+			    <li data-lang-ru="19" data-lang-en="S">19</li>
+			    <li data-lang-ru="20" data-lang-en="T">20</li>
+			    <li data-lang-ru="21" data-lang-en="U">21</li>
+			    <li data-lang-ru="22" data-lang-en="V">22</li>
+			    <li data-lang-ru="23" data-lang-en="W">23</li>
+			    <li data-lang-ru="24" data-lang-en="X">24</li>
+			    <li data-lang-ru="25" data-lang-en="Y">25</li>
+			    <li data-lang-ru="26" data-lang-en="Z">26</li>
 			</ul>
 		</div>
+		
+	</div>
+
+	<div class="row">
 		<div class="col-4">
-			<span class="measure">Включения</span>
+			<span class="measure" data-lang-ru="Включения" data-lang-en="Inclusion">Включения</span>
 			<ul class="selector">
 			    <li>1</li>
 			    <li>2</li>
@@ -169,28 +246,28 @@ $sql = "SELECT * FROM stones LIMIT $page, 100";
 	</div>
 
 	<div class="row">
-		<div class="col-4 sym">
-			<span class="measure">Симметрия</span>
+		<div class="col-4 sym spm"> <!-- spm = sym, pol, mk -->
+			<span class="measure" data-lang-ru="Симметрия" data-lang-en="Symmetry">Симметрия</span>
 			<ul class="selector">
-			    <li data-value="Ideal">Идеальная</li>
-			    <li data-value="Excellent">Отличная</li>
-			    <input type="hidden" name="sym">
+			    <li data-value="Ideal" data-lang-ru="Идеальная" data-lang-en="Ideal">Идеальная</li>
+			    <li data-value="Excellent" data-lang-ru="Отличная" data-lang-en="Excellent">Отличная</li>
+			    <input type="hidden" name="sym" value="<?= $_POST['sym'] ?>">
 			</ul>
 		</div>
-		<div class="col-4 pol">
+		<div class="col-4 pol spm">
 			<span class="measure">Полировка</span>
 			<ul class="selector">
-			    <li data-value="Ideal">Идеальная</li>
-			    <li data-value="Excellent">Отличная</li>
-			    <input type="hidden" name="pol">
+			    <li data-value="Ideal" data-lang-ru="Идеальная" data-lang-en="Ideal">Идеальная</li>
+			    <li data-value="Excellent"  data-lang-ru="Отличная" data-lang-en="Excellent">Отличная</li>
+			    <input type="hidden" name="pol" value="<?= $_POST['pol'] ?>">
 			</ul>
 		</div>
-		<div class="col-4 mk">
+		<div class="col-4 mk spm">
 			<span class="measure">Огранка</span>
 			<ul class="selector">
-			    <li data-value="Ideal">Идеальная</li>
-			    <li data-value="Excellent">Отличная</li>
-			    <input type="hidden" name="mk">
+			    <li data-value="Ideal" data-lang-ru="Идеальная" data-lang-en="Ideal">Идеальная</li>
+			    <li data-value="Excellent"  data-lang-ru="Отличная" data-lang-en="Excellent">Отличная</li>
+			    <input type="hidden" name="mk" value="<?= $_POST['mk'] ?>">
 			</ul>
 
 		</div>
@@ -204,26 +281,26 @@ $sql = "SELECT * FROM stones LIMIT $page, 100";
 			<div class="stone-size">
 				<hr class="extension-line">
 				<img src="circle-brilliant.jpeg">
-				<input type="text" value="3" max="99" > <span>мм</span>
+				<input type="text" value="3" max="99" > <span data-lang-ru="мм" data-lang-en="mm">мм</span>
 				<hr class="extension-line">
 			</div>
 			<div class="stone-weight">
-				<span>Вес (ct)</span>
+				<span   data-lang-ru="Вес (ct)" data-lang-en="Weight (ct)">Вес (ct)</span>
 				<div class="range">
-					<input type="text" name="left-value" value="0.5" >
-					<input class="input-range" id="weight-range" data-slider-min="0.5" data-slider-max="13" data-slider-step="0.01" data-slider-value="[0.5,13]">
-					<input type="text" name="right-value" value="13" >
+					<input type="text" name="left-weight" class="left-value" value="<?= $lw ? $lw : '0.08' ?>" >
+					<input class="input-range" id="weight-range" data-slider-min="0.08" data-slider-max="13" data-slider-step="0.01" data-slider-value="[0.08,13]">
+					<input type="text" name="right-weight" class="right-value" value="<?= $rw ? $rw : '13' ?>" >
 				</div>
 
 			</div>
 		</div>
 		<div class="col-6 wps">
 			<div class="stone-price">
-				<span>Цена (руб)</span>
+				<span  data-lang-ru="Цена (руб)" data-lang-en="Price (rub)">Цена (руб)</span>
 				<div class="range">
-					<input type="text" name="left-value" value="0.5" >
+					<input type="text" name="left-value" class="left-value" value="0.5" >
 					<input class="input-range" id="price-range" data-slider-min="0.5" data-slider-max="13" data-slider-step="0.1" data-slider-value="[0.5,13]">
-					<input type="text" name="right-value" value="13" >
+					<input type="text" name="right-value" class="right-value" value="13" >
 				</div>
 			</div>
 		</div>
@@ -237,7 +314,7 @@ $sql = "SELECT * FROM stones LIMIT $page, 100";
 				<div class="right-top-corner"></div>
 				<div class="left-bottom-corner"></div>
 				<div class="right-bottom-corner"></div>
-				<span class="glyphicon glyphicon-search"></span><span> Поиск</span>
+				<span class="glyphicon glyphicon-search"></span><span  data-lang-ru="Поиск" data-lang-en="Search"> Поиск</span>
 			</div>
 		</div>
 		<div class="col-5"></div>
@@ -247,30 +324,31 @@ $sql = "SELECT * FROM stones LIMIT $page, 100";
 	<table>
 		<thead>
 			<tr>
-				<td></td>
-				<td>Форма</td>
-				<td>Цена (руб)</td>
-				<td>Вес (ct)</td>
-				<td>Цвет по ТУ</td>
-				<td>Чистота</td>
-				<td>Огранка</td>
-				<td>Симметрия</td>
-				<td>Полировка</td>
-				<td>Цена за ct (руб.)</td>
-				<td>Дата доставки</td>
+				<td class="unbordered"></td>
+				<td  data-lang-ru="Форма" data-lang-en="Cut">Форма</td>
+				<td  data-lang-ru="Цена (руб)" data-lang-en="Price (rub)">Цена (руб)</td>
+				<td  data-lang-ru="Вес (ct)" data-lang-en="Weight (ct)">Вес (ct)</td>
+				<td  data-lang-ru="Цвет по ТУ" data-lang-en="Color">Цвет по ТУ</td>
+				<td  data-lang-ru="Чистота" data-lang-en="Clarity">Чистота</td>
+				<td  data-lang-ru="Огранка" data-lang-en="Cut Grade">Огранка</td>
+				<td  data-lang-ru="Симметрия" data-lang-en="Symmetry">Симметрия</td>
+				<td  data-lang-ru="Полировка" data-lang-en="Polishing">Полировка</td>
+				<td  data-lang-ru="Цена за ct (руб)" data-lang-en="Price per ct (rub)">Цена за ct (руб.)</td>
+				<td  data-lang-ru="Дата доставки" data-lang-en="Delivery Date">Дата доставки</td>
 			</tr>
 		</thead>
 		<tbody>	
 			<?php
 			foreach($conn->query($sql) as $row):
 			?>
-			<tr>
+			<tr data-id="<?= $row['id'] ?>">
 
-				<td>
+				<td class="unbordered">
 					<input type="checkbox" class="form-check-input">
 				</td>
 				<td>
-					<?= $row['cut'] ?>
+					<p><?= $row['cut'] ?></p>
+					<img class="cut-mini" src="/brilliants/<?= $row['cut'] ?>.png">
 				</td>
 				<td>
 					<!-- цена непонятно где -->
@@ -299,17 +377,129 @@ $sql = "SELECT * FROM stones LIMIT $page, 100";
 				<td>
 					<!-- delivery date -->
 				</td>
+			</tr>
 
+			<tr class="details" data-details="<?= $row['id']?>">
+				<td class="unbordered"></td>
+				<td colspan="10">
+					<div class="more">
+						<div class="blueprint">
+							<img src="blueprint.jpg">
+						</div>
+						<div class="parameters">
+							<table class="det">
+								<tr>
+									<td data-lang-ru="Форма" data-lang-en="Cut">Форма</td>
+									<td class="brval"><?= $row['cut'] ?></td>
+								</tr>
+								<tr>
+									<td data-lang-ru="Вес" data-lang-en="Weight">Вес</td>
+									<td class="brval"><?= $row['ct'] ?></td>
+								</tr>
+								<tr>
+									<td data-lang-ru="Цвет" data-lang-en="Color">Цвет</td>
+									<td class="brval"><?= $row['col'] ?></td>
+								</tr>
+								<tr>
+									<td data-lang-ru="Чистота" data-lang-en="Clarity">Чистота</td>
+									<td class="brval"><?= $row['cl'] ?></td>
+								</tr>
+								<tr>
+									<td data-lang-ru="Размер" data-lang-en="Size">Размер</td>
+									<td class="brval"><?= $row['mes'] ?></td>
+								</tr>
+								<tr>
+									<td data-lang-ru="Глубина" data-lang-en="Deep">Глубина</td>
+									<td class="brval"><?= $row['dp'] ?>%</td>
+								</tr>
+								<tr>
+									<td data-lang-ru="Площадка" data-lang-en="Square">Площадка</td>
+									<td class="brval"></td>
+								</tr>
+								<tr>
+									<td data-lang-ru="Огранка" data-lang-en="Cut Grade">Огранка</td>
+									<td class="brval"><?= $row['mk'] ?></td>
+								</tr>
+								<tr>
+									<td data-lang-ru="Полировка" data-lang-en="Polishing">Полировка</td>
+									<td class="brval"><?= $row['pol'] ?></td>
+								</tr>
+								<tr>
+									<td data-lang-ru="Симметрия" data-lang-en="Symmetry">Симметрия</td>
+									<td class="brval"><?= $row['sym'] ?></td>
+								</tr>
+								<tr>
+									<td><i class="fa fa-file-pdf-o" aria-hidden="true"></i> <a href="#">GIA</a></td>
+									<td><i class="fa fa-camera" aria-hidden="true"></i> <a href="#"  data-lang-ru="Фото" data-lang-en="Photo">Photo</a></td>
+								</tr>
+							</table>
+						</div>
+						<div class="rectangles">
+							<div class="price-label">
+								<div class="top"><span style="color: #000;">500 000 ₽</span></div>
+								<div class="bottom"><span  data-lang-ru="Цена за ct" data-lang-en="Price per ct">Цена за ct</span></div>
+							</div>
+							<div class="price-label">
+								<div class="top"><span style="color: #000;">200 000 ₽</span></div>
+								<div class="bottom"><span data-lang-ru="Цена за камень" data-lang-en="Full price">Цена за камень</span></div>
+							</div>
+							<div class="price-label">
+								<div class="top"><span style="color: #000;">10%</span></div>
+								<div class="bottom"><span data-lang-ru="Скидка" data-lang-en="Discount">Скидка</span></div>
+							</div>
+							<div class="price-label">
+								<div class="top"><span style="color: #000;">180 000 ₽</span></div>
+								<div class="bottom"><span data-lang-ru="Итоговая цена (с НДС)" data-lang-en="Total (with VAT)">Итоговая цена (с НДС)</span></div>
+							</div>
+							<div class="price-label callback">
+								<div class="top" style="color: #000;"><span class="glyphicon glyphicon-earphone"></span><span  data-lang-ru="Заказать консультацию" data-lang-en="Callback">Заказать консультацию</span></div>
+							</div>
+							<div class="price-label add-cart">
+								<div class="top"><span class="glyphicon glyphicon-shopping-cart"></span>
+									<span data-lang-ru="Добавить в корзину" data-lang-en="Add to cart"  style="color: #cecece;">Добавить в корзину</span></div>
+							</div>
+						</div>
+					</div>
+				</td>
 			</tr>
 			<?php
 			endforeach;
 			?>
 
-
-
 		</tbody>
 
 	</table>
+
+	<?php
+	$start = 1;
+	$end = 10;
+	if(($page - 5) >= 1){
+		$start = $page - 5;
+	}
+
+	if(($page + 5) <= ($count/100)){
+		$end = $page + 5;
+	} else {
+		$end = intval(ceil($count / 100));
+	}
+
+
+	?>
+
+	<div class="pagination-nav">
+		<ul class="pagination">
+			<li class="page-item"><a class="page-link" href="/?page=1">Начало</a></li>
+			<?php
+			foreach(range($start, $end) as $i):
+			?>
+				<li class="page-item"><a class="page-link" href="/?page=<?= $i ?>"><?= $i ?></a></li>
+			<?php
+			endforeach;
+			?>
+
+			<li class="page-item"><a class="page-link" href="/?page=<?= intval(ceil($count / 100))?>">Конец</a></li>
+		</ul>
+	</div>
 
 	<hr>
 	<div class="footer row">

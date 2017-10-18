@@ -94,7 +94,15 @@ li.disk{
 	padding: 2px 3px;
 	text-align: center;
 	cursor: pointer;
-	min-width: 50px;
+	min-width: 60px;
+}
+
+.selector.color li{
+	min-width: 45px;
+}
+
+.selector li.disable{
+	background: #eaeaea;
 }
 
 .toggle li:first-child, .selector li:first-child{

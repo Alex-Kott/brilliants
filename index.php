@@ -4,6 +4,36 @@ $dsn = 'mysql:dbname=brilliants;host=127.0.0.1';
 $user = 'root';
 $password = 'toor';
 
+function rubusd(){
+	// https://query.yahooapis.com/v1/public/yql?q=select+*+from+yahoo.finance.xchange+where+pair+=%22USDRUB%22&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+
+	$url = "https://query.yahooapis.com/v1/public/yql";
+	$params = array(
+		'q'		=> 'SELECT * FROM yahoo.finance.xchange WHERE pair = "USDRUB"',
+		'format'=> 'json',
+		'env' 	=> 'store://datatables.org/alltableswithkeys'
+	);
+
+
+	$opts = array(
+        'http' => array(
+            'method' => 'POST',
+            'header' => 'Content-Type: application/x-www-form-urlencoded' . PHP_EOL,
+            'content' => http_build_query($params),
+        )
+    );
+
+    $context = stream_context_create($opts);
+    try{
+    	var_dump(file_get_contents($url, false, $context));
+        $response = json_decode(file_get_contents($url, false, $context));
+    } catch (Exception $e) {
+    	var_dump($e);
+    }
+    var_dump($response);
+}
+
+rubusd();
 
 try {
     $conn = new PDO($dsn, $user, $password);
@@ -14,7 +44,10 @@ try {
 
 $cut = 'Round';
 if($_POST['cut']){
-	$cut = $_POST['cut'];
+	$cuts = implode("', '", explode(',', $_POST['cut']));
+	$cut = "IN ('$cuts')";
+} else {
+	$cut = 'IS NOT NULL';
 }
 
 
@@ -43,7 +76,7 @@ $p = ($page - 1) * 100;
 
 $sql = "
 	SELECT * FROM stones 
-	WHERE `cut` = '$cut' AND 
+	WHERE `cut` $cut AND 
 		`sym` IN ($sym) AND
 		`pol` IN ($pol) AND
 		`mk` IN ($mk) AND 
@@ -53,6 +86,7 @@ $sql = "
 		LIMIT $p, 100
 		";
 
+// var_dump($_POST);
 // var_dump($sql);
 
 $sql_count = "
@@ -126,12 +160,13 @@ foreach ($conn->query($sql_count) as $key => $value) {
 				<li class="current" data-lang="ru">Русский</li>
 				<li data-lang="en">English</li>
 			</ul>
+			<input type="hidden" name="lang" value="<?= $_POST['lang'] ?>">
 		</div>
 	</div>
 
 	<div class="row">
 		<div class="col-12 cuts">
-			<div class="cut current">
+			<div class="cut">
 				<div class="cut-img">
 					<img src="brilliants/Round.png">
 				</div>
@@ -199,14 +234,14 @@ foreach ($conn->query($sql_count) as $key => $value) {
 			</div>
 		</div>
 	</div>
-	<input type="hidden" name="cut" value="<?= $cut ?>">
+	<input type="hidden" name="cut" value="<?= $_POST['cut'] ?>">
 
 	<hr>
 
 	<div class="row">
 		<div class="col-12">
 			<span class="measure" data-lang-ru="Цвет" data-lang-en="Color">Цвет</span>
-			<ul class="selector">
+			<ul class="selector color">
 			    <li data-lang-ru="4" data-lang-en="D">4</li>
 			    <li data-lang-ru="5" data-lang-en="E">5</li>
 			    <li data-lang-ru="6" data-lang-en="F">6</li>
@@ -231,45 +266,69 @@ foreach ($conn->query($sql_count) as $key => $value) {
 			    <li data-lang-ru="25" data-lang-en="Y">25</li>
 			    <li data-lang-ru="26" data-lang-en="Z">26</li>
 			</ul>
+			<input type="hidden" name="color" value="">
 		</div>
 		
 	</div>
 
 	<div class="row">
-		<div class="col-4">
+		<div class="col-6">
 			<span class="measure" data-lang-ru="Включения" data-lang-en="Inclusion">Включения</span>
-			<ul class="selector">
-			    <li>1</li>
-			    <li>2</li>
+			<ul class="selector clarity">
+			    <li data-lang-ru="1" data-lang-en="FL">1</li>
+			    <li data-lang-ru="2" data-lang-en="IF">2</li>
+			    <li class="disable" data-lang-ru="3" data-lang-en="VVS1">3</li>
+			    <li class="disable" data-lang-ru="4" data-lang-en="VVS2">4</li>
+			    <li class="disable" data-lang-ru="5" data-lang-en="VS1">5</li>
+			    <li class="disable" data-lang-ru="6" data-lang-en="VS2">6</li>
+			    <li class="disable" data-lang-ru="7" data-lang-en="SI1">7</li>
 			</ul>
+			<input type="hidden" name="clear" value="">
 		</div>
 	</div>
 
 	<div class="row">
-		<div class="col-4 sym spm"> <!-- spm = sym, pol, mk -->
+		<div class="col-8 sym spm"> <!-- spm = sym, pol, mk -->
 			<span class="measure" data-lang-ru="Симметрия" data-lang-en="Symmetry">Симметрия</span>
 			<ul class="selector">
 			    <li data-value="Ideal" data-lang-ru="Идеальная" data-lang-en="Ideal">Идеальная</li>
 			    <li data-value="Excellent" data-lang-ru="Отличная" data-lang-en="Excellent">Отличная</li>
+			    <li class="disable" data-value="Very good" data-lang-ru="Очень хорошая" data-lang-en="Very good">Очень хорошая</li>
+			    <li class="disable" data-value="Good" data-lang-ru="Хорошая" data-lang-en="Good">Хорошая</li>
+			    <li class="disable" data-value="Fair" data-lang-ru="Неплохая" data-lang-en="Fair">Неплохая</li>
+			    <li class="disable" data-value="Poor" data-lang-ru="Плохая" data-lang-en="Poor">Плохая</li>
 			    <input type="hidden" name="sym" value="<?= $_POST['sym'] ?>">
 			</ul>
 		</div>
-		<div class="col-4 pol spm">
-			<span class="measure">Полировка</span>
+	</div>
+	<div class="row">
+		<div class="col-8 pol spm">
+			<span class="measure" data-lang-ru="Полировка" data-lang-en="Polishing">Полировка</span>
 			<ul class="selector">
 			    <li data-value="Ideal" data-lang-ru="Идеальная" data-lang-en="Ideal">Идеальная</li>
 			    <li data-value="Excellent"  data-lang-ru="Отличная" data-lang-en="Excellent">Отличная</li>
+			    <li class="disable" data-value="Very good" data-lang-ru="Очень хорошая" data-lang-en="Very good">Очень хорошая</li>
+			    <li class="disable" data-value="Good" data-lang-ru="Хорошая" data-lang-en="Good">Хорошая</li>
+			    <li class="disable" data-value="Fair" data-lang-ru="Неплохая" data-lang-en="Fair">Неплохая</li>
+			    <li class="disable" data-value="Poor" data-lang-ru="Плохая" data-lang-en="Poor">Плохая</li>
 			    <input type="hidden" name="pol" value="<?= $_POST['pol'] ?>">
 			</ul>
 		</div>
-		<div class="col-4 mk spm">
-			<span class="measure">Огранка</span>
+		
+
+	</div>
+	<div class="row">
+		<div class="col-8 mk spm">
+			<span class="measure" data-lang-ru="Огранка" data-lang-en="Cut Grade">Огранка</span>
 			<ul class="selector">
 			    <li data-value="Ideal" data-lang-ru="Идеальная" data-lang-en="Ideal">Идеальная</li>
 			    <li data-value="Excellent"  data-lang-ru="Отличная" data-lang-en="Excellent">Отличная</li>
+			    <li class="disable" data-value="Very good" data-lang-ru="Очень хорошая" data-lang-en="Very good">Очень хорошая</li>
+			    <li class="disable" data-value="Good" data-lang-ru="Хорошая" data-lang-en="Good">Хорошая</li>
+			    <li class="disable" data-value="Fair" data-lang-ru="Неплохая" data-lang-en="Fair">Неплохая</li>
+			    <li class="disable" data-value="Poor" data-lang-ru="Плохая" data-lang-en="Poor">Плохая</li>
 			    <input type="hidden" name="mk" value="<?= $_POST['mk'] ?>">
 			</ul>
-
 		</div>
 
 	</div>
@@ -296,7 +355,7 @@ foreach ($conn->query($sql_count) as $key => $value) {
 		</div>
 		<div class="col-6 wps">
 			<div class="stone-price">
-				<span  data-lang-ru="Цена (руб)" data-lang-en="Price (rub)">Цена (руб)</span>
+				<span  data-lang-ru="Цена (RUR)" data-lang-en="Price (USD)">Цена (руб)</span>
 				<div class="range">
 					<input type="text" name="left-value" class="left-value" value="0.5" >
 					<input class="input-range" id="price-range" data-slider-min="0.5" data-slider-max="13" data-slider-step="0.1" data-slider-value="[0.5,13]">
@@ -326,15 +385,15 @@ foreach ($conn->query($sql_count) as $key => $value) {
 			<tr>
 				<td class="unbordered"></td>
 				<td  data-lang-ru="Форма" data-lang-en="Cut">Форма</td>
-				<td  data-lang-ru="Цена (руб)" data-lang-en="Price (rub)">Цена (руб)</td>
+				<td  data-lang-ru="Цена (RUR)" data-lang-en="Price (USD)">Цена (руб)</td>
+				<td  data-lang-ru="Цена за ct (RUR)" data-lang-en="Price per ct (USD)">Цена за ct (руб.)</td>
 				<td  data-lang-ru="Вес (ct)" data-lang-en="Weight (ct)">Вес (ct)</td>
 				<td  data-lang-ru="Цвет по ТУ" data-lang-en="Color">Цвет по ТУ</td>
 				<td  data-lang-ru="Чистота" data-lang-en="Clarity">Чистота</td>
 				<td  data-lang-ru="Огранка" data-lang-en="Cut Grade">Огранка</td>
 				<td  data-lang-ru="Симметрия" data-lang-en="Symmetry">Симметрия</td>
 				<td  data-lang-ru="Полировка" data-lang-en="Polishing">Полировка</td>
-				<td  data-lang-ru="Цена за ct (руб)" data-lang-en="Price per ct (rub)">Цена за ct (руб.)</td>
-				<td  data-lang-ru="Дата доставки" data-lang-en="Delivery Date">Дата доставки</td>
+				<td  data-lang-ru="Купить" data-lang-en="Buy">Купить</td>
 			</tr>
 		</thead>
 		<tbody>	
@@ -352,6 +411,11 @@ foreach ($conn->query($sql_count) as $key => $value) {
 				</td>
 				<td>
 					<!-- цена непонятно где -->
+					<?= $row['tp'] ?>
+				</td>
+				<td>
+					<!-- price per carat -->
+					<?= $row['ap'] ?>
 				</td>
 				<td>
 					<?= $row['ct'] ?>
@@ -371,11 +435,12 @@ foreach ($conn->query($sql_count) as $key => $value) {
 				<td>
 					<?= $row['pol'] ?>
 				</td>
+				
 				<td>
-					<!-- price per carat -->
-				</td>
-				<td>
-					<!-- delivery date -->
+					<div class="price-label add-cart" style="width: 90%;">
+						<div class="top"><span class="glyphicon glyphicon-shopping-cart"></span>
+							<span data-lang-ru="Купить" data-lang-en="Buy"  style="color: #cecece;">Купить</span></div>
+					</div>
 				</td>
 			</tr>
 
@@ -429,23 +494,23 @@ foreach ($conn->query($sql_count) as $key => $value) {
 									<td class="brval"><?= $row['sym'] ?></td>
 								</tr>
 								<tr>
-									<td><i class="fa fa-file-pdf-o" aria-hidden="true"></i> <a href="#">GIA</a></td>
+									<td><i class="fa fa-file-pdf-o" aria-hidden="true"></i> <a target="_blank" href="<?= $row['cp'] ?>">GIA</a></td>
 									<td><i class="fa fa-camera" aria-hidden="true"></i> <a href="#"  data-lang-ru="Фото" data-lang-en="Photo">Photo</a></td>
 								</tr>
 							</table>
 						</div>
 						<div class="rectangles">
 							<div class="price-label">
-								<div class="top"><span style="color: #000;">500 000 ₽</span></div>
+								<div class="top"><span style="color: #000;"><?= $row['ap'] ?> $</span></div>
 								<div class="bottom"><span  data-lang-ru="Цена за ct" data-lang-en="Price per ct">Цена за ct</span></div>
 							</div>
 							<div class="price-label">
-								<div class="top"><span style="color: #000;">200 000 ₽</span></div>
-								<div class="bottom"><span data-lang-ru="Цена за камень" data-lang-en="Full price">Цена за камень</span></div>
+								<div class="top"><span style="color: #000;"><?= $row['tp'] ?> $</span></div>
+								<div class="bottom"><span data-lang-ru="Цена за камень" data-lang-en="Total price">Цена за камень</span></div>
 							</div>
 							<div class="price-label">
 								<div class="top"><span style="color: #000;">10%</span></div>
-								<div class="bottom"><span data-lang-ru="Скидка" data-lang-en="Discount">Скидка</span></div>
+								<div class="bottom"><span data-lang-ru="Скидка" data-lang-en="HCA Score">Скидка</span></div>
 							</div>
 							<div class="price-label">
 								<div class="top"><span style="color: #000;">180 000 ₽</span></div>
@@ -456,7 +521,7 @@ foreach ($conn->query($sql_count) as $key => $value) {
 							</div>
 							<div class="price-label add-cart">
 								<div class="top"><span class="glyphicon glyphicon-shopping-cart"></span>
-									<span data-lang-ru="Добавить в корзину" data-lang-en="Add to cart"  style="color: #cecece;">Добавить в корзину</span></div>
+									<span data-lang-ru="Купить" data-lang-en="Buy"  style="color: #cecece;">Купить</span></div>
 							</div>
 						</div>
 					</div>

@@ -3,6 +3,7 @@ $(".toggle li").on("click", function(){
 });
 
 $(".selector li").on("click", function(){
+	if($(this).hasClass("disable")) return;
 	if($(this).hasClass("checked")){
 		$(this).removeClass("checked");
 	} else {
@@ -19,9 +20,17 @@ $(".selector li").on("click", function(){
 })
 
 $(".cut").on("click", function(){
-	$(this).addClass("current").siblings().removeClass("current");
-	var cut = $(this).find(".cut-name").data("cut");
-	$("input[name=cut]").val(cut);
+	if($(this).hasClass("current")){
+		$(this).removeClass("current");
+	} else {
+		$(this).addClass("current");
+	}
+	var cuts = [];
+	$(".cut.current").each(function(i, item){
+		var cut = $(item).find(".cut-name").data("cut");
+		cuts.push(cut);
+	})
+	$("input[name=cut]").val(cuts.join(','))
 });
 
 var weight_slider = new Slider("#weight-range", {});
@@ -38,9 +47,13 @@ $(".search-btn").on("click", function(){
 	$("form").submit();
 });
 
-$("tr").on("click", function(){
+$("tr a").on("click", function(e){
+	e.stopPropagation();
+})
+
+$("tr").on("click", function(e){
+
 	var id = $(this).data("id");
-	console.log(id)
 	$(".details").css("display", "none")
 	$(`.details[data-details=${id}]`).css("display", "table-row");
 });
@@ -59,7 +72,10 @@ var _0x9ec0=['bG9n','QXV0aG9yIG9mIHRoaXMgcGFnZSBAQWxleEtvdHQgaW4gdGVsZWdyYW0gb3I
 
 $(function(){
 	var cut = $("input[name=cut]").val();
-	$(`span[data-cut=${cut}]`).trigger("click");
+	var cuts = cut.split(',');
+	cuts.map(function(item, i){
+		$(`span[data-cut=${item}]`).trigger("click");
+	})
 });
 
 $("#lang").on("click", function(){
@@ -68,4 +84,28 @@ $("#lang").on("click", function(){
 		var text = $(this).data(`lang-${lang}`);
 		$(this).empty().append(text)
 	})
+	$("input[name=lang]").val(lang);
+});
+
+$(function(){
+	var lang = $("input[name=lang]").val();
+	$(`[data-lang=${lang}]`).trigger("click");
+})
+
+$(".color li").on("click", function(){
+	var colors = [];
+	$(".color li.checked").each(function(i, item){
+		var color = $(item).data("lang-en");
+		colors.push(color);
+	});
+	$("input[name=color]").val(colors.join(','));
+});
+
+$(".clarity li").on("click", function(){
+	var clears = [];
+	$(".clarity li.checked").each(function(i, item){
+		var clear = $(item).data("lang-en");
+		clears.push(clear);
+	});
+	$("input[name=clear]").val(clears.join(','));
 });

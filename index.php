@@ -25,15 +25,17 @@ function rubusd(){
 
     $context = stream_context_create($opts);
     try{
-    	var_dump(file_get_contents($url, false, $context));
+    	// var_dump(file_get_contents($url, false, $context));
         $response = json_decode(file_get_contents($url, false, $context));
     } catch (Exception $e) {
-    	var_dump($e);
+    	// var_dump($e);
     }
-    var_dump($response);
+    $rate = $response->query->results->rate->Ask;
+    return $rate;
 }
 
-rubusd();
+$rate = rubusd();
+
 
 try {
     $conn = new PDO($dsn, $user, $password);
@@ -81,7 +83,8 @@ $sql = "
 		`pol` IN ($pol) AND
 		`mk` IN ($mk) AND 
 		(`ct` BETWEEN $lw AND $rw) AND
-		`cl` IN ('IF', 'FL')
+		`cl` IN ('IF', 'FL') AND 
+		`lab` IN ('GIA')
 	ORDER BY `ct` ASC, `cl` ASC
 		LIMIT $p, 100
 		";
@@ -242,29 +245,29 @@ foreach ($conn->query($sql_count) as $key => $value) {
 		<div class="col-12">
 			<span class="measure" data-lang-ru="Цвет" data-lang-en="Color">Цвет</span>
 			<ul class="selector color">
-			    <li data-lang-ru="4" data-lang-en="D">4</li>
-			    <li data-lang-ru="5" data-lang-en="E">5</li>
-			    <li data-lang-ru="6" data-lang-en="F">6</li>
-			    <li data-lang-ru="6" data-lang-en="G">6</li>
-			    <li data-lang-ru="8" data-lang-en="H">8</li>
-			    <li data-lang-ru="9" data-lang-en="I">9</li>
-			    <li data-lang-ru="10" data-lang-en="J">10</li>
-			    <li data-lang-ru="11" data-lang-en="K">11</li>
-			    <li data-lang-ru="12" data-lang-en="L">12</li>
-			    <li data-lang-ru="13" data-lang-en="M">13</li>
-			    <li data-lang-ru="14" data-lang-en="N">14</li>
-			    <li data-lang-ru="15" data-lang-en="O">15</li>
-			    <li data-lang-ru="16" data-lang-en="P">16</li>
-			    <li data-lang-ru="17" data-lang-en="Q">17</li>
-			    <li data-lang-ru="18" data-lang-en="R">18</li>
-			    <li data-lang-ru="19" data-lang-en="S">19</li>
-			    <li data-lang-ru="20" data-lang-en="T">20</li>
-			    <li data-lang-ru="21" data-lang-en="U">21</li>
-			    <li data-lang-ru="22" data-lang-en="V">22</li>
-			    <li data-lang-ru="23" data-lang-en="W">23</li>
-			    <li data-lang-ru="24" data-lang-en="X">24</li>
-			    <li data-lang-ru="25" data-lang-en="Y">25</li>
-			    <li data-lang-ru="26" data-lang-en="Z">26</li>
+			    <li data-lang-ru="1" data-lang-en="D">1</li>
+			    <li data-lang-ru="2" data-lang-en="E">2</li>
+			    <li data-lang-ru="3" data-lang-en="F">3</li>
+			    <li data-lang-ru="4" data-lang-en="G">4</li>
+			    <li data-lang-ru="5" data-lang-en="H">5</li>
+			    <li data-lang-ru="6" data-lang-en="I">6</li>
+			    <li data-lang-ru="7" data-lang-en="J">7</li>
+			    <li data-lang-ru="8" data-lang-en="K">8</li>
+			    <li data-lang-ru="9" data-lang-en="L">9</li>
+			    <li data-lang-ru="10" data-lang-en="M">10</li>
+			    <li data-lang-ru="11" data-lang-en="N">11</li>
+			    <li data-lang-ru="12" data-lang-en="O">12</li>
+			    <li data-lang-ru="13" data-lang-en="P">13</li>
+			    <li data-lang-ru="14" data-lang-en="Q">14</li>
+			    <li data-lang-ru="15" data-lang-en="R">15</li>
+			    <li data-lang-ru="16" data-lang-en="S">16</li>
+			    <li data-lang-ru="17" data-lang-en="T">17</li>
+			    <li data-lang-ru="18" data-lang-en="U">18</li>
+			    <li data-lang-ru="19" data-lang-en="V">19</li>
+			    <li data-lang-ru="20" data-lang-en="W">20</li>
+			    <li data-lang-ru="21" data-lang-en="X">21</li>
+			    <li data-lang-ru="22" data-lang-en="Y">22</li>
+			    <li data-lang-ru="23" data-lang-en="Z">23</li>
 			</ul>
 			<input type="hidden" name="color" value="">
 		</div>
@@ -410,12 +413,10 @@ foreach ($conn->query($sql_count) as $key => $value) {
 					<img class="cut-mini" src="/brilliants/<?= $row['cut'] ?>.png">
 				</td>
 				<td>
-					<!-- цена непонятно где -->
-					<?= $row['tp'] ?>
+					<span data-lang-ru="<?= number_format($row['tp']*$rate, 2, ',', ' ') ?>" data-lang-en="<?= number_format($row['tp'], 2, ',', ' ') ?>"><?= number_format($row['tp']*$rate, 2, ',', ' ') ?></span>
 				</td>
 				<td>
-					<!-- price per carat -->
-					<?= $row['ap'] ?>
+					<span data-lang-ru="<?= number_format($row['ap']*$rate, 2, ',', ' ') ?>" data-lang-en="<?= number_format($row['ap'], 2, ',', ' ') ?>"><?= number_format($row['ap']*$rate, 2, ',', ' ') ?></span>
 				</td>
 				<td>
 					<?= $row['ct'] ?>
@@ -501,11 +502,19 @@ foreach ($conn->query($sql_count) as $key => $value) {
 						</div>
 						<div class="rectangles">
 							<div class="price-label">
-								<div class="top"><span style="color: #000;"><?= $row['ap'] ?> $</span></div>
+								<div class="top">
+									<span style="color: #000;" data-lang-ru="<?= number_format($row['ap']*$rate, 2, ',', ' ') ?> &#8381;" data-lang-en="<?= number_format($row['ap'], 2, ',', ' ') ?> $">
+										<?=number_format($row['ap']*$rate, 2, ',', ' ') ?> &#8381;
+									</span>
+								</div>
 								<div class="bottom"><span  data-lang-ru="Цена за ct" data-lang-en="Price per ct">Цена за ct</span></div>
 							</div>
 							<div class="price-label">
-								<div class="top"><span style="color: #000;"><?= $row['tp'] ?> $</span></div>
+								<div class="top">
+									<span style="color: #000;" data-lang-ru="<?= number_format($row['tp']*$rate, 2, ',', ' ') ?> &#8381;" data-lang-en="<?= number_format($row['tp'], 2, ',', ' ') ?> $">
+										<?=number_format($row['tp']*$rate, 2, ',', ' ') ?> &#8381;
+									</span>
+								</div>
 								<div class="bottom"><span data-lang-ru="Цена за камень" data-lang-en="Total price">Цена за камень</span></div>
 							</div>
 							<div class="price-label">

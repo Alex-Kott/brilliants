@@ -1,3 +1,4 @@
+# encoding=utf8  
 from bs4 import BeautifulSoup
 import MySQLdb
 
@@ -6,7 +7,7 @@ db = MySQLdb.connect(host="localhost", user="root", passwd = "toor", db="brillia
 cursor = db.cursor()
 
 
-with open("data.xml", "r") as f:
+with open("data.xml", "rb") as f:
 	data = f.read()
 	f.close()
 
@@ -37,7 +38,7 @@ for i in items:
 		'st'	: attrs.get('st', ''),
 		'idxl'	: attrs.get('idxl', 0)
 	}
-	# print(item)
+	print(item, end='')
 
 	try:
 		sql = '''INSERT INTO stones(id, cut, ct, col, cl, mk, lab, cn, cp, ap, tp, pol, sym, mes, dp, fl, cty, st, idxl) 

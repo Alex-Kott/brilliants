@@ -146,7 +146,7 @@ foreach ($conn->query($sql_count) as $key => $value) {
 		<div class="col-4">
 			<div class="brand">
 				<!-- <div>Hugo Freund &#38; Co</div> -->
-				<img src="Hugo freund & Co.jpeg" />
+				<!-- <img src="Hugo freund & Co.jpeg" /> -->
 			</div>
 		</div>
 		<div class="col-4">

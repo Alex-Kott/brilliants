@@ -16,19 +16,23 @@ db = MySQLdb.connect(host=db_host,
                     charset="utf8")
 cursor = db.cursor()
 
+def download_data():
+	full_data_url = "http://idexonline.com/Idex_Feed_API-Full_Inventory?String_Access=359H1HDXPHHVWW27387ZOOEQD"
 
-# full_data_url = "http://idexonline.com/Idex_Feed_API-Full_Inventory?String_Access=359H1HDXPHHVWW27387ZOOEQD"
-
-# response = req.get(full_data_url, stream=True)
-# with open(data_folder.format('data.zip'), 'wb') as f:
-# 	for data in tqdm(response.iter_content()):
-# 		f.write(data)
-
-zs = zipfile.ZipFile(data_folder.format('data.zip'))
-zs.extractall('data/')
-extract_file = zs.namelist()[0]
+	response = req.get(full_data_url, stream=True)
+	with open(data_folder.format('data.zip'), 'wb') as f:
+		for data in tqdm(response.iter_content()):
+			f.write(data)
 
 
+def get_filename():
+	zs = zipfile.ZipFile(data_folder.format('data.zip'))
+	zs.extractall('data/')
+	extract_file = zs.namelist()[0]
+	return extract_file
+
+download_data()
+extract_file = get_filename()
 
 
 with open(data_folder.format(extract_file), "rb") as f:

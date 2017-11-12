@@ -1,40 +1,39 @@
-# encoding=utf8  
+# encoding=utf8
 from bs4 import BeautifulSoup
-import MySQLdb
-from psycopg2.extras import execute_values
-import psycopg2.extras
 from tqdm import tqdm
+import MySQLdb
 import requests as req
-import zipfile
+import zipfile 
+import os
 
 from config import *
 
 db = MySQLdb.connect(host=db_host, 
 					user=db_user,
-                    passwd=db_password, 
-                    db=db_name, 
-                    charset="utf8")
+					passwd=db_password, 
+					db=db_name, 
+					charset="utf8")
 cursor = db.cursor()
 
 
-# full_data_url = "http://idexonline.com/Idex_Feed_API-Full_Inventory?String_Access=359H1HDXPHHVWW27387ZOOEQD"
 
-# response = req.get(full_data_url, stream=True)
-# with open(data_folder.format('data.zip'), 'wb') as f:
-# 	for data in tqdm(response.iter_content()):
-# 		f.write(data)
 
-zs = zipfile.ZipFile(data_folder.format('data.zip'))
+
+update_url = "http://idexonline.com/Idex_Feed_API-Inventory_Update?String_Access=359H1HDXPHHVWW27387ZOOEQD"
+
+response = req.get(update_url, stream=True)
+with open(data_folder.format('update.zip'), 'wb') as f:
+	for data in tqdm(response.iter_content()):
+		f.write(data)
+
+zs = zipfile.ZipFile(data_folder.format('update.zip'))
 zs.extractall('data/')
 extract_file = zs.namelist()[0]
 
 
-
-
-with open(data_folder.format(extract_file), "rb") as f:
+with open(data_folder.format('update.zip'), "rb") as f:
 	data = f.read()
 	f.close()
-
 
 
 soup = BeautifulSoup(data, "lxml")
@@ -62,7 +61,7 @@ for i in items:
 		'st'	: attrs.get('st', ''),
 		'idxl'	: attrs.get('idxl', 0)
 	}
-	print(item, end='')
+	# print(item, end='')
 
 	try:
 		sql = '''INSERT INTO stones(id, cut, ct, col, cl, mk, lab, cn, cp, ap, tp, pol, sym, mes, dp, fl, cty, st, idxl) 
@@ -73,5 +72,7 @@ for i in items:
 		print(e)
 		pass
 
-# print(i)
 db.close()
+
+os.remove(data_folder.format(extract_file))
+os.remove(data_folder.format('update.zip'))

@@ -61,7 +61,7 @@ for i in items:
 		'st'	: attrs.get('st', ''),
 		'idxl'	: attrs.get('idxl', 0)
 	}
-	# print(item, end='')
+	print(item, end='')
 
 	try:
 		sql = '''INSERT INTO stones(id, cut, ct, col, cl, mk, lab, cn, cp, ap, tp, pol, sym, mes, dp, fl, cty, st, idxl) 

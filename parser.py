@@ -44,6 +44,8 @@ with open(data_folder.format(extract_file), "rb") as f:
 soup = BeautifulSoup(data, "lxml")
 items = soup.find_all("item")
 for i in items:
+	print(i)
+	continue
 	attrs = i.attrs
 	item = {
 		'id'	: attrs.get('id'),

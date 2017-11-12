@@ -1,37 +1,25 @@
 <?php
-
 $dsn = 'mysql:dbname=brilliants;host=127.0.0.1';
 $user = 'root';
 $password = 'toor';
 
 function rubusd(){
-	// https://query.yahooapis.com/v1/public/yql?q=select+*+from+yahoo.finance.xchange+where+pair+=%22USDRUB%22&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
+	$url = "http://www.cbr.ru/scripts/XML_daily.asp";
+	$params = array();
 
-	$url = "https://query.yahooapis.com/v1/public/yql";
-	$params = array(
-		'q'		=> 'SELECT * FROM yahoo.finance.xchange WHERE pair = "USDRUB"',
-		'format'=> 'json',
-		'env' 	=> 'store://datatables.org/alltableswithkeys'
-	);
-
-
-	$opts = array(
-        'http' => array(
-            'method' => 'POST',
-            'header' => 'Content-Type: application/x-www-form-urlencoded' . PHP_EOL,
-            'content' => http_build_query($params),
-        )
-    );
-
-    $context = stream_context_create($opts);
     try{
-    	// var_dump(file_get_contents($url, false, $context));
-        $response = json_decode(file_get_contents($url, false, $context));
+        $response = file_get_contents($url, false);
     } catch (Exception $e) {
     	// var_dump($e);
     }
-    $rate = $response->query->results->rate->Ask;
-    return $rate;
+    $xml_response = new SimpleXMLElement($response);
+    foreach($xml_response->Valute as $currency){
+    	if($currency->NumCode == 840){
+    		$rate = $currency->Value;
+    	}
+    }
+    $rate = str_replace(',', '.', $rate);
+    return floatval($rate);
 }
 
 $rate = rubusd();
@@ -614,3 +602,60 @@ foreach ($conn->query($sql_count) as $key => $value) {
 
 
 <script src="script.js"></script>
+
+<script>
+	(function(w, d, s, l, i) {
+	    w[l] = w[l] || [];
+	    w[l].push({
+	        'gtm.start': new Date().getTime(),
+	        event: 'gtm.js'
+	    });
+	    var f = d.getElementsByTagName(s)[0],
+	        j = d.createElement(s),
+	        dl = l != 'dataLayer' ? '&l=' + l : '';
+	    j.async = true;
+	    j.src =
+	        'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+	    f.parentNode.insertBefore(j, f);
+	})(window, document, 'script', 'dataLayer', 'GTM-W44K5C9');
+</script>
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W44K5C9"
+   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script type="text/javascript" > 
+(function(d, w, c) {
+    (w[c] = w[c] || []).push(function() {
+        try {
+            w.yaCounter46608843 = new Ya.Metrika({
+                id: 46608843,
+                clickmap: true,
+                trackLinks: true,
+                accurateTrackBounce: true,
+                webvisor: true,
+                trackHash: true,
+                ecommerce: "dataLayer"
+            });
+        } catch (e) {}
+    });
+    var n = d.getElementsByTagName("script")[0],
+        s = d.createElement("script"),
+        f = function() {
+            n.parentNode.insertBefore(s, n);
+        };
+    s.type = "text/javascript";
+    s.async = true;
+    s.src = "https://cdn.jsdelivr.net/npm/yandex-metrica-watch/watch.js";
+    if (w.opera == "[object Opera]") {
+        d.addEventListener("DOMContentLoaded", f, false);
+    } else {
+        f();
+    }
+})(document, window, "yandex_metrika_callbacks");
+</script> 
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-109522789-1"></script>
+<script>
+   window.dataLayer = window.dataLayer || [];
+   function gtag(){dataLayer.push(arguments);}
+   gtag('js', new Date());
+   
+   gtag('config', 'UA-109522789-1');
+</script>
